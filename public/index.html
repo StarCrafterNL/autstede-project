@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kindgegevens Weekend</title>
+  
+  <!-- Bibliotheken voor PDF-generatie -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.5;
+      background: #f1f5f9;
+      margin: 0;
+      padding: 2rem 1rem;
+      color: #1e293b;
+    }
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 2.5rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      margin-top: 0;
+      color: #0f172a;
+      font-size: 1.75rem;
+      margin-bottom: 1.5rem;
+    }
+    fieldset {
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      background: #ffffff;
+    }
+    legend {
+      font-weight: 700;
+      padding: 0 0.5rem;
+      color: #1e40af;
+      font-size: 1.1rem;
+    }
+    .field {
+      margin-bottom: 1.25rem;
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.35rem;
+      font-size: 0.95rem;
+      color: #334155;
+    }
+    input[type="text"],
+    input[type="date"],
+    input[type="tel"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 0.65rem 0.75rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      box-sizing: border-box;
+      font-family: inherit;
+      font-size: 0.95rem;
+      background: #fff;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+    .radio-group {
+      display: flex;
+      gap: 1.5rem;
+      margin-top: 0.25rem;
+    }
+    .radio-group label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-weight: 400;
+      cursor: pointer;
+    }
+    .medication-entry {
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
+      padding: 1.25rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+    }
+    .btn-secondary {
+      background: #f1f5f9;
+      color: #334155;
+      border: 1px solid #cbd5e1;
+      padding: 0.6rem 1.2rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    .btn-secondary:hover {
+      background: #e2e8f0;
+    }
+    .btn-remove {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+      padding: 0.35rem 0.75rem;
+      border-radius: 4px;
+      cursor: pointer;
+      float: right;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .btn-remove:hover {
+      background: #fca5a5;
+    }
+    .btn-submit {
+      background: #2563eb;
+      color: #ffffff;
+      border: none;
+      padding: 0.9rem 1.5rem;
+      border-radius: 8px;
+      font-size: 1.05rem;
+      cursor: pointer;
+      width: 100%;
+      font-weight: 600;
+      transition: background 0.15s ease;
+    }
+    .btn-submit:hover {
+      background: #1d4ed8;
+    }
+    .btn-submit:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+    }
+    .status-msg {
+      margin-bottom: 1.5rem;
+      padding: 1.25rem;
+      border-radius: 8px;
+      display: none;
+    }
+    .status-msg h3 {
+      margin-top: 0;
+      margin-bottom: 0.5rem;
+    }
+    .success {
+      background: #dcfce7;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+    }
+    .error {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Kindgegevens Weekend</h1>
+  
+  <div id="statusBox" class="status-msg"></div>
+
+  <form id="childIntakeForm">
+    <!-- 1. Algemene gegevens -->
+    <fieldset>
+      <legend>1. Algemene gegevens (Vereist)</legend>
+      
+      <div class="field">
+        <label for="naam">Volledige naam kind *</label>
+        <input type="text" id="naam" name="naam" required>
+      </div>
+
+      <div class="field">
+        <label for="geboortedatum">Geboortedatum *</label>
+        <input type="date" id="geboortedatum" name="geboortedatum" required>
+      </div>
+
+      <div class="field">
+        <label for="geslacht">Geslacht *</label>
+        <select id="geslacht" name="geslacht" required>
+          <option value="">Maak een keuze...</option>
+          <option value="Jongen">Jongen</option>
+          <option value="Meisje">Meisje</option>
+          <option value="Anders">Anders</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="diagnose">Diagnose(s) *</label>
+        <textarea id="diagnose" name="diagnose" rows="2" placeholder="Bijv. ADHD, ASS, geen diagnose..." required></textarea>
+      </div>
+
+      <div class="field">
+        <label for="telefoon">Mobiel nummer ouder/verzorger *</label>
+        <input type="tel" id="telefoon" name="telefoon" placeholder="06-12345678" required>
+      </div>
+
+      <div class="field">
+        <label for="gezin">Gezinssamenstelling *</label>
+        <textarea id="gezin" name="gezin" rows="2" placeholder="Bijv. Ouders, 1 broertje (8), 1 zusje (4)" required></textarea>
+      </div>
+    </fieldset>
+
+    <!-- 2. Beeld van het kind -->
+    <fieldset>
+      <legend>2. Beeld van het kind (Vereist)</legend>
+      
+      <div class="field">
+        <label for="omschrijving">Omschrijving van het kind *</label>
+        <textarea id="omschrijving" name="omschrijving" rows="3" placeholder="Karakter, hoe maakt het kind contact, wat helpt bij spanning?" required></textarea>
+      </div>
+
+      <div class="field">
+        <label for="hobbys">Hobby's & interesses *</label>
+        <textarea id="hobbys" name="hobbys" rows="2" placeholder="Wat vindt het kind leuk om te doen?" required></textarea>
+      </div>
+
+      <div class="field">
+        <label for="doel">Doel tijdens het weekend *</label>
+        <textarea id="doel" name="doel" rows="2" placeholder="Wat wil het kind of willen jullie uit dit weekend halen?" required></textarea>
+      </div>
+    </fieldset>
+
+    <!-- 3. Bijzonderheden voor het weekend -->
+    <fieldset>
+      <legend>3. Bijzonderheden weekend (Vereist)</legend>
+      
+      <div class="field">
+        <label for="slaap">Slaapgewoonten *</label>
+        <textarea id="slaap" name="slaap" rows="2" placeholder="Rituelen, nachtangst, lampje aan, speciale knuffel..." required></textarea>
+      </div>
+
+      <div class="field">
+        <label for="angst">Angsten / spanningen *</label>
+        <textarea id="angst" name="angst" rows="2" placeholder="Bijv. donker, harde geluiden, hoogtes, honden..." required></textarea>
+      </div>
+
+      <div class="field">
+        <label>Loopt wel eens weg? *</label>
+        <div class="radio-group">
+          <label><input type="radio" name="weglopen" value="Nee" required> Nee</label>
+          <label><input type="radio" name="weglopen" value="Ja"> Ja</label>
+          <label><input type="radio" name="weglopen" value="Soms / bij spanning"> Soms (bij bijv. spanning)</label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Zwemdiploma *</label>
+        <div class="radio-group">
+          <label><input type="radio" name="zwemdiploma" value="Geen" required> Geen diploma</label>
+          <label><input type="radio" name="zwemdiploma" value="Diploma A"> Diploma A</label>
+          <label><input type="radio" name="zwemdiploma" value="Diploma B of hoger"> Diploma B of hoger</label>
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- 4. Medicatie -->
+    <fieldset>
+      <legend>4. Medicatie (Optioneel)</legend>
+      <p style="font-size: 0.9rem; color: #64748b; margin-top: 0;">
+        Gebruikt het kind medicatie tijdens het weekend? Voeg dit hieronder toe. Laat leeg als er geen medicatie is.
+      </p>
+
+      <div id="medicationContainer"></div>
+
+      <button type="button" class="btn-secondary" onclick="addMedication()">+ Medicatie toevoegen</button>
+    </fieldset>
+
+    <button type="submit" id="submitBtn" class="btn-submit">Gegevens verzenden</button>
+  </form>
+</div>
+
+<script>
+  let medCount = 0;
+
+  function addMedication() {
+    medCount++;
+    const container = document.getElementById('medicationContainer');
+    const entry = document.createElement('div');
+    entry.className = 'medication-entry';
+    entry.id = `med_${medCount}`;
+    entry.innerHTML = `
+      <button type="button" class="btn-remove" onclick="document.getElementById('med_${medCount}').remove()">Verwijderen</button>
+      <div class="field">
+        <label>Naam medicatie</label>
+        <input type="text" class="med-naam" placeholder="Bijv. Methylfenidaat">
+      </div>
+      <div class="field">
+        <label>Tijdstip(pen) van inname</label>
+        <input type="text" class="med-tijd" placeholder="Bijv. 08:00 bij ontbijt en 12:30">
+      </div>
+      <div class="field" style="margin-bottom: 0;">
+        <label>Toelichting / dosering</label>
+        <textarea class="med-toelichting" rows="2" placeholder="Dosering, innemen met water of vla, etc."></textarea>
+      </div>
+    `;
+    container.appendChild(entry);
+  }
+
+  document.getElementById('childIntakeForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const submitBtn = document.getElementById('submitBtn');
+    const statusBox = document.getElementById('statusBox');
+
+    submitBtn.disabled = true;
+    submitBtn.innerText = "Bezig met verwerken en opslaan...";
+    statusBox.style.display = 'none';
+
+    try {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      // Formulierwaarden uitlezen
+      const naam = document.getElementById('naam').value.trim();
+      const rawGeboortedatum = document.getElementById('geboortedatum').value;
+
+      // Omzetten naar dag/maand/jaar
+      let geboortedatum = rawGeboortedatum;
+      if (rawGeboortedatum) {
+        const [jaar, maand, dag] = rawGeboortedatum.split('-');
+        geboortedatum = `${dag}/${maand}/${jaar}`;
+      }
+
+      const geslacht = document.getElementById('geslacht').value;
+      const diagnose = document.getElementById('diagnose').value;
+      const telefoon = document.getElementById('telefoon').value;
+      const gezin = document.getElementById('gezin').value;
+
+      const omschrijving = document.getElementById('omschrijving').value;
+      const hobbys = document.getElementById('hobbys').value;
+      const doel = document.getElementById('doel').value;
+
+      const slaap = document.getElementById('slaap').value;
+      const angst = document.getElementById('angst').value;
+      const weglopen = document.querySelector('input[name="weglopen"]:checked')?.value || 'Nee';
+      const zwemdiploma = document.querySelector('input[name="zwemdiploma"]:checked')?.value || 'Geen';
+
+      // 1. Titel en datum in PDF
+      doc.setFontSize(16);
+      doc.setFont(undefined, 'bold');
+      doc.setTextColor(30, 41, 59);
+      doc.text("Kindgegevens Weekend", 14, 18);
+
+      const datumOpties = { day: 'numeric', month: 'long', year: 'numeric' };
+      const datumVandaag = new Date().toLocaleDateString('nl-NL', datumOpties);
+      doc.setFontSize(10);
+      doc.setFont(undefined, 'normal');
+      doc.setTextColor(100, 116, 139);
+      doc.text(`Aangemaakt op: ${datumVandaag}`, 14, 25);
+
+      // 2. Structuur opbouwen conform format
+      const bodyRows = [
+        // 1. Algemene gegevens
+        [{ content: '1. Algemene gegevens', colSpan: 2, styles: { fillColor: [241, 245, 249], fontStyle: 'bold', textColor: [30, 41, 59] } }],
+        ['Volledige naam', naam],
+        ['Geboortedatum', geboortedatum],
+        ['Geslacht', geslacht],
+        ['Diagnose(s)', diagnose],
+        ['Mobiel ouder/verzorger', telefoon],
+        ['Gezinssamenstelling', gezin],
+
+        // 2. Beeld van het kind
+        [{ content: '2. Beeld van het kind', colSpan: 2, styles: { fillColor: [241, 245, 249], fontStyle: 'bold', textColor: [30, 41, 59] } }],
+        ['Omschrijving', omschrijving],
+        ["Hobby's & interesses", hobbys],
+        ['Doel weekend', doel],
+
+        // 3. Bijzonderheden weekend
+        [{ content: '3. Bijzonderheden weekend', colSpan: 2, styles: { fillColor: [241, 245, 249], fontStyle: 'bold', textColor: [30, 41, 59] } }],
+        ['Slaapgewoonten', slaap],
+        ['Angsten / spanningen', angst],
+        ['Loopt wel eens weg', weglopen],
+        ['Zwemdiploma', zwemdiploma],
+
+        // 4. Medicatieoverzicht
+        [{ content: '4. Medicatieoverzicht', colSpan: 2, styles: { fillColor: [241, 245, 249], fontStyle: 'bold', textColor: [30, 41, 59] } }]
+      ];
+
+      // Medicatierijen toevoegen
+      const medEntries = document.querySelectorAll('.medication-entry');
+      let medIndex = 0;
+      medEntries.forEach(entry => {
+        const mNaam = entry.querySelector('.med-naam').value.trim();
+        const mTijd = entry.querySelector('.med-tijd').value.trim();
+        const mToel = entry.querySelector('.med-toelichting').value.trim();
+        if (mNaam || mTijd || mToel) {
+          medIndex++;
+          bodyRows.push([
+            `Medicijn #${medIndex}: ${mNaam || 'Niet ingevuld'}`,
+            `Tijdstip: ${mTijd || '-'}\nToelichting: ${mToel || '-'}`
+          ]);
+        }
+      });
+
+      if (medIndex === 0) {
+        bodyRows.push(['Medicatie', 'Geen medicatie opgegeven']);
+      }
+
+      // Tabel tekenen
+      doc.autoTable({
+        startY: 30,
+        body: bodyRows,
+        theme: 'grid',
+        styles: {
+          fontSize: 9.5,
+          cellPadding: 4,
+          textColor: [33, 41, 54],
+          lineColor: [203, 213, 225],
+          lineWidth: 0.2
+        },
+        columnStyles: {
+          0: { cellWidth: 55, fontStyle: 'bold', textColor: [51, 65, 85] },
+          1: { cellWidth: 125 }
+        }
+      });
+
+      // 3. Omzetten naar een blob met de nieuwe bestandsnaam
+      const pdfBlob = doc.output('blob');
+      const safeName = naam.replace(/[^a-zA-Z0-9_-]/g, '_');
+      const fileName = `Kindgegevens_${safeName}.pdf`;
+
+      // 4. Verzenden naar de server
+      const formData = new FormData();
+      formData.append('pdfFile', pdfBlob, fileName);
+
+      const response = await fetch('/api/upload-pdf', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error('Serverfout bij het opslaan.');
+      }
+
+      // 5. Formulier verbergen en succesmelding tonen
+      document.getElementById('childIntakeForm').style.display = 'none';
+      statusBox.className = 'status-msg success';
+      statusBox.style.display = 'block';
+      statusBox.innerHTML = `
+        <h3>Hartelijk dank!</h3>
+        <p>De gegevens voor <strong>${naam}</strong> zijn succesvol opgeslagen.</p>
+      `;
+
+    } catch (err) {
+      console.error(err);
+      statusBox.className = 'status-msg error';
+      statusBox.style.display = 'block';
+      statusBox.innerText = 'Er is een fout opgetreden bij het verzenden. Controleer of de server draait (node server.js).';
+      submitBtn.disabled = false;
+      submitBtn.innerText = 'Gegevens verzenden';
+    }
+  });
+</script>
+
+</body>
+</html>
